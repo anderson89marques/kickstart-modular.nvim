@@ -23,6 +23,7 @@ return {
 
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
+    'mfussenegger/nvim-dap-python',
   },
   config = function()
     local dap = require 'dap'
@@ -51,6 +52,7 @@ return {
     vim.keymap.set('n', '<F2>', dap.step_over, { desc = 'Debug: Step Over' })
     vim.keymap.set('n', '<F3>', dap.step_out, { desc = 'Debug: Step Out' })
     vim.keymap.set('n', '<leader>b', dap.toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
+    vim.keymap.set('n', '<leader>db', dap.set_breakpoint, { desc = 'Debug: Set Breakpoint' })
     vim.keymap.set('n', '<leader>B', function()
       dap.set_breakpoint(vim.fn.input 'Breakpoint condition: ')
     end, { desc = 'Debug: Set Breakpoint' })
@@ -84,6 +86,18 @@ return {
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
+    vim.keymap.set('n', '<leader>dus', function()
+      local widgets = require 'dap.ui.widgets'
+      local sidebar = widgets.sidebar(widgets.scopes)
+      sidebar.open()
+    end, { desc = 'Open Debug Sidebar' })
+
+    require('dap-python').setup()
+    require('dap-python').test_runner = 'pytest'
+    vim.keymap.set('n', '<leader>dpr', '<cmd>lua require("dap-python").test_method()<cr>', { desc = '[D]ebug [P]ython [R]un' })
+    vim.keymap.set('n', '<leader>dpc', '<cmd>lua require("dap-python").test_class()<cr>', { desc = '[D]ebug [P]ython [C]lass' })
+    vim.keymap.set('n', '<leader>dps', '<cmd>lua require("dap-python").debug_selection()<cr>', { desc = '[D]ebug [P]ython [S]election' })
+
     -- Install golang specific config
     require('dap-go').setup {
       delve = {
@@ -92,5 +106,14 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
+    dapgo = require 'dap-go'
+
+    vim.keymap.set('n', '<leader>dgt', function()
+      dapgo.debug_test()
+    end, { desc = 'Debug Go Test' })
+
+    vim.keymap.set('n', '<leader>dgl', function()
+      dapgo.debug_last_test()
+    end, { desc = 'Debug Go Last test' })
   end,
 }
